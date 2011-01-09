@@ -1,0 +1,36 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=3395
+
+A very simple VIM plugin to visually select a Python Function or Class
+
+
+Installation couldn't be easier: drop the plugin file in your vim plugin 
+directory.
+
+I would highly recommend you use something like Pathogen though, it 
+makes dealing with VIM plugins way easier.
+
+1. Intro                                 
+
+After trying other plugins that were supposed to achieve this objective (and 
+fail) I decided to write it on my own. 
+
+The initial approach is to be able to simply have a visual selection of a 
+Python Class or Function.
+
+No need to have VIM compiled with Python support since this plugin uses 
+pure VIM syntax.
+
+2. Usage                                
+
+Straightforward (for now). Chapa has 2 public calls that you can map to 
+anything you want. If you had a leader mapping, it woul look similar to 
+this::
+
+    nmap <Leader>c <Esc>:ChapaVisualClass <CR>
+    nmap <Leader>f <Esc>:ChapaVisualFunction <CR>
+
+When either is called, it goes to the start of the selection and starts a 
+visual block until indentation no longer applies.
+
+If the requested search (function or class) is not found, the call simply 
+returns and nothing should happen.
