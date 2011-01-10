@@ -16,12 +16,15 @@ endif
 
 " In certain situations, it allows you to echo something without 
 " having to hit Return again to do exec the command.
+" It looks if the global message variable is set or set to 0 or set to 1
 function! s:Echo(msg)
-  let x=&ruler | let y=&showcmd
-  set noruler noshowcmd
-  redraw
-  echo a:msg
-  let &ruler=x | let &showcmd=y
+  if (! exists('g:chapa_messages') || exists('g:chapa_messages') && g:chapa_messages)
+    let x=&ruler | let y=&showcmd
+    set noruler noshowcmd
+    redraw
+    echo a:msg
+    let &ruler=x | let &showcmd=y
+  endif
 endfun
 
 "}}}
@@ -29,16 +32,13 @@ endfun
 "{{{ Main Functions 
 
 " Select an object ("class"/"function")
-function! s:PythonSelectObject(obj)
+function! s:PythonSelectObject(obj, direction)
   " Go to the object declaration
   normal $
-  let rev = s:FindPythonObject(a:obj, -1)
-  if (! rev)
-    let fwd = s:FindPythonObject(a:obj, 1)
-    if (! fwd)
-      return
-     endif
-   endif
+  let go_to_obj = s:FindPythonObject(a:obj, a:direction)
+  if (! go_to_obj)
+    return
+  endif
 
   let beg = line('.')
   exec beg
@@ -86,8 +86,14 @@ function! s:FindPythonObject(obj, direction)
   if (a:obj == "class")
     let objregexp = "^\\s*class\\s\\+[a-zA-Z0-9_]\\+"
         \ . "\\s*\\((\\([a-zA-Z0-9_,. \\t\\n]\\)*)\\)\\=\\s*:"
+  elseif (a:obj == "method")
+    let objregexp = "^\\s*def\\s\\+[a-zA-Z0-9_]\\+\\s*(\\s*self\\_[^:#]*)\\s*:"
   else
-    let objregexp = "^\\s*def\\s\\+[a-zA-Z0-9_]\\+\\s*(\\_[^:#]*)\\s*:"
+    " Relaxes the original RegExp to be able to match a bit more easier 
+    " looks for a line starting with def (with space) that does not include 
+    " a `self` in it.
+    " orig regexp:  "^\\s*def\\s\\+[a-zA-Z0-9_]\\+\\s*(\\_[^:#]*)\\s*:"
+    let objregexp = '\v^(.*def )&(.*self)@!'
   endif
   let flag = "W"
   if (a:direction == -1)
@@ -95,14 +101,42 @@ function! s:FindPythonObject(obj, direction)
   endif
   let result = search(objregexp, flag)
   if result
-      return line('.') 
+    return line('.') 
   else 
-      return 
+    if (a:direction == -1)
+      let movement = "previous "
+    else
+      let movement = "next "
+    endif
+    let message = "Match not found for " . movement . a:obj
+    call s:Echo(message)
+    return 
   endif
 endfunction
 "}}}
 
 "{{{ Misc 
-command! -nargs=0 ChapaVisualFunction call s:PythonSelectObject("function")
-command! -nargs=0 ChapaVisualClass call s:PythonSelectObject("class")
+" Visual Select Class 
+command! -nargs=0 ChapaVisualNextClass call s:PythonSelectObject("class", 1)
+command! -nargs=0 ChapaVisualPreviousClass call s:PythonSelectObject("class", -1)
+
+" Visual Select Function 
+command! -nargs=0 ChapaVisualNextFunction call s:PythonSelectObject("function", 1)
+command! -nargs=0 ChapaVisualPreviousFunction call s:PythonSelectObject("function", -1)
+
+" Visual Select Method
+command! -nargs=0 ChapaVisualNextMethod call s:PythonSelectObject("method", 1)
+command! -nargs=0 ChapaVisualPreviousMethod call s:PythonSelectObject("method", -1)
+
+" Method movement
+command! -nargs=0 ChapaPreviousMethod call s:FindPythonObject("method", -1)
+command! -nargs=0 ChapaNextMethod call s:FindPythonObject("method", 1)
+
+" Class movement
+command! -nargs=0 ChapaPreviousClass call s:FindPythonObject("class", -1)
+command! -nargs=0 ChapaNextClass call s:FindPythonObject("class", 1)
+
+" Function movement
+command! -nargs=0 ChapaPreviousFunction call s:FindPythonObject("function", -1)
+command! -nargs=0 ChapaNextFunction call s:FindPythonObject("function", 1)
 "}}}
