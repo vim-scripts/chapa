@@ -1,8 +1,8 @@
 Chapa
 =====
-A very simple VIM plugin to visually select a Function or a Class
+Allows you to move to previous/next class, function or method 
 
-Simple approach to visual selection of Python blocks.
+or visually select the next/previous class, function or method. 
 
 Installation couldn't be easier: drop the plugin file in your vim plugin 
 directory.
@@ -15,9 +15,6 @@ makes dealing with VIM plugins way easier.
 
 After trying other plugins that were supposed to achieve this objective (and 
 fail) I decided to write it on my own. 
-
-The initial approach is to be able to simply have a visual selection of a 
-Python Class or Function.
 
 No need to have VIM compiled with Python support since this plugin uses 
 pure VIM syntax.
@@ -32,24 +29,24 @@ You can map those callables to anything you want, but below is how the
 author maps them (better mnemonics)::
 
   " Function Movement
-  nnoremap fpf <Esc>:ChapaNextFunction<CR>
-  nnoremap Fpf <Esc>:ChapaPreviousFunction<CR>
+  nnoremap fpf <Plug>ChapaNextFunction
+  nnoremap Fpf <Plug>ChapaPreviousFunction
 
   " Class Movement
-  nnoremap fpc <Esc>:ChapaNextClass<CR>
-  nnoremap Fpc <Esc>:ChapaPreviousClass<CR>
+  nnoremap fpc <Plug>ChapaNextClass
+  nnoremap Fpc <Plug>ChapaPreviousClass
 
   " Method Movement
-  nnoremap fpm <Esc>:ChapaNextMethod<CR>
-  nnoremap Fpm <Esc>:ChapaPreviousMethod<CR>
+  nnoremap fpm <Plug>ChapaNextMethod
+  nnoremap Fpm <Plug>ChapaPreviousMethod
 
   " Class Visual Select
-  nnoremap vapf <Esc>:ChapaVisualNextFunction<CR>
-  nnoremap vapF <Esc>:ChapaVisualPreviousFunction<CR>
+  nnoremap vapf <Plug>ChapaVisualNextFunction
+  nnoremap vapF <Plug>ChapaVisualPreviousFunction
 
   " Method Visual Select
-  nnoremap vapm <Esc>:ChapaVisualNextMethod<CR>
-  nnoremap vapM <Esc>:ChapaVisualPreviousMethod<CR>
+  nnoremap vapm <Plug>ChapaVisualNextMethod
+  nnoremap vapM <Plug>ChapaVisualPreviousMethod
 
 
 If the requested search (function, class or method) is not found, the call simply 
@@ -61,6 +58,10 @@ You can disable this by adding a chapa-specific variable in your vimrc::
 
   let g:chapa_messages = 0
 
+You can also add a "count" to repeat the match N times. So if you want to go 
+to 3 previous classes you would (with the mappings above) do something like::
+
+  3Fpc
 
 3. License                             
 ==============================================================================
