@@ -6,8 +6,12 @@ or visually select the next/previous N class, function or method
 
 or comment (or toggle) out the next/previous N class, function or method.
 
-Installation couldn't be easier: drop the plugin file in your vim plugin 
-directory.
+As this is a "file-type plugin", it currently supports both Python and Ruby.
+
+Installation couldn't be easier: drop the ftplugin file in your vim ftplugin 
+directory. For example, if you are using Python, this would be something like::
+
+    ~/.vim/ftplugin/python/chapa.vim
 
 I would highly recommend you use something like Pathogen though, it 
 makes dealing with VIM plugins way easier.
@@ -18,7 +22,7 @@ makes dealing with VIM plugins way easier.
 After trying other plugins that were supposed to achieve this objective (and 
 fail) I decided to write it on my own.  
 
-No need to have VIM compiled with Python support since this plugin uses 
+No need to have VIM compiled with Python or Ruby support since this plugin uses 
 pure VIM syntax.
 
 2. Usage                                
@@ -37,51 +41,70 @@ your vimrc::
 You can map those callables to anything you want, but below is how the 
 defaults are mapped::
 
-   " Function Movement
-   nmap fpf <Plug>ChapaNextFunction
-   nmap Fpf <Plug>ChapaPreviousFunction
+    " Function Movement
+    nmap fnf <Plug>ChapaNextFunction
+    nmap fpf <Plug>ChapaPreviousFunction
 
-   " Class Movement
-   nmap fpc <Plug>ChapaNextClass
-   nmap Fpc <Plug>ChapaPreviousClass
+    " Class Movement
+    nmap fnc <Plug>ChapaNextClass
+    nmap fpc <Plug>ChapaPreviousClass
 
-   " Method Movement
-   nmap fpm <Plug>ChapaNextMethod
-   nmap Fpm <Plug>ChapaPreviousMethod
+    " Method Movement
+    nmap fnm <Plug>ChapaNextMethod
+    nmap fpm <Plug>ChapaPreviousMethod
 
-   " Class Visual Select 
-   nmap vanc <Plug>ChapaVisualNextClass
-   nmap vic <Plug>ChapaVisualThisClass 
-   nmap vapc <Plug>ChapaVisualPreviousClass
+    " Class Visual Select 
+    nmap vnc <Plug>ChapaVisualNextClass
+    nmap vic <Plug>ChapaVisualThisClass 
+    nmap vpc <Plug>ChapaVisualPreviousClass
 
-   " Method Visual Select
-   nmap vanm <Plug>ChapaVisualNextMethod
-   nmap vim <Plug>ChapaVisualThisMethod
-   nmap vapm <Plug>ChapaVisualPreviousMethod
+    " Method Visual Select
+    nmap vnm <Plug>ChapaVisualNextMethod
+    nmap vim <Plug>ChapaVisualThisMethod
+    nmap vpm <Plug>ChapaVisualPreviousMethod
 
-   " Function Visual Select
-   nmap vanf <Plug>ChapaVisualNextFunction
-   nmap vif <Plug>ChapaVisualThisFunction
-   nmap vapf <Plug>ChapaVisualPreviousFunction
+    " Function Visual Select
+    nmap vnf <Plug>ChapaVisualNextFunction
+    nmap vif <Plug>ChapaVisualThisFunction
+    nmap vpf <Plug>ChapaVisualPreviousFunction
 
-   " Comment Class
-   nmap cic <Plug>ChapaCommentThisClass
-   nmap cnc <Plug>ChapaCommentNextClass
-   nmap cpc <Plug>ChapaCommentPreviousClass
+    " Comment Class
+    nmap cic <Plug>ChapaCommentThisClass
+    nmap cnc <Plug>ChapaCommentNextClass
+    nmap cpc <Plug>ChapaCommentPreviousClass
 
-   " Comment Method 
-   nmap cim <Plug>ChapaCommentThisMethod 
-   nmap cnm <Plug>ChapaCommentNextMethod 
-   nmap cpm <Plug>ChapaCommentPreviousMethod 
+    " Comment Method 
+    nmap cim <Plug>ChapaCommentThisMethod 
+    nmap cnm <Plug>ChapaCommentNextMethod 
+    nmap cpm <Plug>ChapaCommentPreviousMethod 
 
-   " Comment Function 
-   nmap cif <Plug>ChapaCommentThisFunction
-   nmap cnf <Plug>ChapaCommentNextFunction
-   nmap cpf <Plug>ChapaCommentPreviousFunction
-    
-   " Repeat Mappings
-   nmap <C-h> <Plug>ChapaOppositeRepeat
-   nmap <C-l> <Plug>ChapaRepeat
+    " Comment Function 
+    nmap cif <Plug>ChapaCommentThisFunction
+    nmap cnf <Plug>ChapaCommentNextFunction
+    nmap cpf <Plug>ChapaCommentPreviousFunction
+
+    " Repeat Mappings
+    nmap <C-h> <Plug>ChapaOppositeRepeat
+    nmap <C-l> <Plug>ChapaRepeat
+
+
+    """""""""""""""""""""""""""""""""""""""""""""
+    " Ruby-Only Section
+    """""""""""""""""""""""""""""""""""""""""""""
+
+    " Comment Module 
+    nmap ciM <Plug>ChapaCommentThisModule
+    nmap cnM <Plug>ChapaCommentNextModule
+    nmap cpM <Plug>ChapaCommentPreviousModule
+
+    " Module Visual Select
+    nmap vnM <Plug>ChapaVisualNextModule
+    nmap viM <Plug>ChapaVisualThisModule
+    nmap vpM <Plug>ChapaVisualPreviousModule
+
+    " Module Movement
+    nmap fnM <Plug>ChapaNextModule
+    nmap fpM <Plug>ChapaPreviousModule
 
 If the requested search (function, class or method) is not found, the call simply 
 returns and nothing should happen. However, there is an error message that should 
@@ -95,12 +118,12 @@ You can disable this by adding a chapa-specific variable in your vimrc::
 You can also add a "count" to repeat the match N times. So if you want to go 
 to the 3rd previous class you would (with the mappings above) do something like::
 
-  3Fpc
+  3fpc
 
 The same applies for visual selections. If you want to visually select the 3rd
 next method, you would do it like::
 
-  3vanm
+  3vnm
 
 You can also toggle comments of a given class, method or function. To comment
 the next class::

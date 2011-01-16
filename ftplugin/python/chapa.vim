@@ -15,31 +15,31 @@ endif
 "{{{ Default Mappings 
 if (exists('g:chapa_default_mappings'))
     " Function Movement
-    nmap fpf <Plug>ChapaNextFunction
-    nmap Fpf <Plug>ChapaPreviousFunction
+    nmap fnf <Plug>ChapaNextFunction
+    nmap fpf <Plug>ChapaPreviousFunction
 
     " Class Movement
-    nmap fpc <Plug>ChapaNextClass
-    nmap Fpc <Plug>ChapaPreviousClass
+    nmap fnc <Plug>ChapaNextClass
+    nmap fpc <Plug>ChapaPreviousClass
 
     " Method Movement
-    nmap fpm <Plug>ChapaNextMethod
-    nmap Fpm <Plug>ChapaPreviousMethod
+    nmap fnm <Plug>ChapaNextMethod
+    nmap fpm <Plug>ChapaPreviousMethod
 
     " Class Visual Select 
-    nmap vanc <Plug>ChapaVisualNextClass
+    nmap vnc <Plug>ChapaVisualNextClass
     nmap vic <Plug>ChapaVisualThisClass 
-    nmap vapc <Plug>ChapaVisualPreviousClass
+    nmap vpc <Plug>ChapaVisualPreviousClass
 
     " Method Visual Select
-    nmap vanm <Plug>ChapaVisualNextMethod
+    nmap vnm <Plug>ChapaVisualNextMethod
     nmap vim <Plug>ChapaVisualThisMethod
-    nmap vapm <Plug>ChapaVisualPreviousMethod
+    nmap vpm <Plug>ChapaVisualPreviousMethod
 
     " Function Visual Select
-    nmap vanf <Plug>ChapaVisualNextFunction
+    nmap vnf <Plug>ChapaVisualNextFunction
     nmap vif <Plug>ChapaVisualThisFunction
-    nmap vapf <Plug>ChapaVisualPreviousFunction
+    nmap vpf <Plug>ChapaVisualPreviousFunction
 
     " Comment Class
     nmap cic <Plug>ChapaCommentThisClass
