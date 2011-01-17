@@ -269,7 +269,7 @@ function! s:NextEnd(fwd, obj)
         endif            
 
 
-        if (getline(line) =~ '\v^\s*(.*end)\s*')
+        if (getline(line) =~ '\v^\s*end\s*')
             let c_end = c_end + 1
             if (c_class + c_method + c_function + c_module == c_end)
                 return line 
