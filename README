@@ -6,6 +6,8 @@ toggle comments or visually select the next/previous class, function or method.
 
 Currently supports Python, JavaScript and Ruby
 
+Watch the screencast:  http://vimeo.com/19016562
+
 Usage                                 
 There are a couple of routes you can take: with or without default mappings.
 
