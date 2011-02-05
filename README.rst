@@ -40,8 +40,18 @@ your vimrc::
 
     let g:chapa_default_mappings = 1
 
+You can also make the repeat actions for the plugin optional. If the above 
+variable is set but you don't like the repeat mappings, set the following 
+in your vimrc::
+
+    let g:chapa_no_repeat_mappings = 1
+
 You can map those callables to anything you want, but below is how the 
 defaults are mapped::
+
+    " Repeat Mappings
+    nmap <C-h> <Plug>ChapaOppositeRepeat
+    nmap <C-l> <Plug>ChapaRepeat
 
     " Function Movement
     nmap fnf <Plug>ChapaNextFunction
@@ -85,28 +95,21 @@ defaults are mapped::
     nmap cnf <Plug>ChapaCommentNextFunction
     nmap cpf <Plug>ChapaCommentPreviousFunction
 
-    " Repeat Mappings
-    nmap <C-h> <Plug>ChapaOppositeRepeat
-    nmap <C-l> <Plug>ChapaRepeat
+    " Folding Method
+    nmap zim <Plug>ChapaFoldThisMethod
+    nmap znm <Plug>ChapaFoldNextMethod
+    nmap zpm <Plug>ChapaFoldPreviousMethod
 
+    " Folding Class
+    nmap zic <Plug>ChapaFoldThisClass
+    nmap znc <Plug>ChapaFoldNextClass
+    nmap zpc <Plug>ChapaFoldPreviousClass
 
-    """""""""""""""""""""""""""""""""""""""""""""
-    " Ruby-Only Section
-    """""""""""""""""""""""""""""""""""""""""""""
+    " Folding Function
+    nmap zif <Plug>ChapaFoldThisFunction
+    nmap znf <Plug>ChapaFoldNextFunction
+    nmap zpf <Plug>ChapaFoldPreviousFunction
 
-    " Comment Module 
-    nmap ciM <Plug>ChapaCommentThisModule
-    nmap cnM <Plug>ChapaCommentNextModule
-    nmap cpM <Plug>ChapaCommentPreviousModule
-
-    " Module Visual Select
-    nmap vnM <Plug>ChapaVisualNextModule
-    nmap viM <Plug>ChapaVisualThisModule
-    nmap vpM <Plug>ChapaVisualPreviousModule
-
-    " Module Movement
-    nmap fnM <Plug>ChapaNextModule
-    nmap fpM <Plug>ChapaPreviousModule
 
 If the requested search (function, class or method) is not found, the call simply 
 returns and nothing should happen. However, there is an error message that should 

@@ -13,7 +13,18 @@ if exists("g:loaded_chapa") || &cp
 endif
 
 "{{{ Default Mappings 
+" Set local folding settings
+setlocal foldmethod=manual
+setlocal foldtext=ChapaCustomFoldText()
+
+
 if (exists('g:chapa_default_mappings'))
+    if (! exists('g:chapa_no_repeat_mappings'))
+        " Repeat Mappings
+        nmap <C-h> <Plug>ChapaOppositeRepeat
+        nmap <C-l> <Plug>ChapaRepeat
+    endif
+
     " Function Movement
     nmap fnf <Plug>ChapaNextFunction
     nmap fif <Plug>ChapaInFunction
@@ -59,9 +70,20 @@ if (exists('g:chapa_default_mappings'))
     nmap cnf <Plug>ChapaCommentNextFunction
     nmap cpf <Plug>ChapaCommentPreviousFunction
 
-    " Repeat Mappings
-    nmap <C-h> <Plug>ChapaOppositeRepeat
-    nmap <C-l> <Plug>ChapaRepeat
+    " Folding Method
+    nmap zim <Plug>ChapaFoldThisMethod
+    nmap znm <Plug>ChapaFoldNextMethod
+    nmap zpm <Plug>ChapaFoldPreviousMethod
+
+    " Folding Class
+    nmap zic <Plug>ChapaFoldThisClass
+    nmap znc <Plug>ChapaFoldNextClass
+    nmap zpc <Plug>ChapaFoldPreviousClass
+
+    " Folding Function
+    nmap zif <Plug>ChapaFoldThisFunction
+    nmap znf <Plug>ChapaFoldNextFunction
+    nmap zpf <Plug>ChapaFoldPreviousFunction
 endif
 
 "{{{ Helpers
@@ -78,6 +100,23 @@ function! s:Echo(msg)
     let &ruler=x | let &showcmd=y
   endif
 endfun
+
+
+function! ChapaCustomFoldText()
+    let line = getline(v:foldstart)
+    if (line =~ '\v^\s*\@')
+        let decorator_line = v:foldstart + 1
+        while (getline(decorator_line) =~ '\v^\s*\@')
+            let decorator_line = decorator_line + 1
+        endwhile
+        let title = getline(decorator_line)
+    else
+        let title = line
+    endif
+    let fold_title = substitute(title,"^\\s\\+\\|\\s\\+$","","g") 
+    return v:folddashes . fold_title
+endfunction
+
 
 " Wouldn't it be nice if you could just repeat the effing Movements
 " instead of typing mnemonics to keep going forward or backwards?
@@ -133,7 +172,7 @@ function! s:PythonCommentObject(obj, direction, count)
         let beg = line('.')
     endif
 
-    let until = s:NextIndent(1)
+    let until = s:NextIndent("comments")
 
     " go to the line we need
     exec beg
@@ -149,6 +188,10 @@ function! s:PythonCommentObject(obj, direction, count)
         let regex = " s/^/#/"
     endif
         
+    echo "Beginning " . beg
+    echo "Until " . until
+    echo "Has comments " . has_comments
+    echo "Regex " . regex
     if line_moves > 0
         execute beg . "," . until . regex
     else
@@ -170,12 +213,65 @@ function! s:HasComments(from, until)
     endtry
 endfunction
 
+
 " Find the last commented line 
 function! s:LastComment(from_line)
     let line = a:from_line
     exe line
     return s:NextUncommentedLine(1)
 endfunction
+
+
+function! IsFolded(line)
+    let possible_fold = foldclosed(a:line)
+    if (possible_fold == -1)
+        return 0
+    else
+        return 1
+endfunction
+
+
+" Folding actions for methods, classes or functions
+function! s:PythonFoldObject(obj, direction, count)
+    let orig_line = line('.')
+    let orig_col = col('.')
+
+    " Go to the object declaration
+    normal $
+    let go_to_obj = s:FindPythonObject(a:obj, a:direction, a:count)
+        
+    if ((! go_to_obj) || (foldclosed(line('.')) != -1))
+        exec orig_line
+        exe "normal " orig_col . "|"
+        return
+    endif
+
+    " It is possible that this object is already folded:
+    "if (foldclosed(line('.')) != -1)
+    " Sometimes, when we get a decorator we are not in the line we want 
+    let has_decorator = s:HasPythonDecorator(line('.'))
+
+    if has_decorator 
+        let beg = has_decorator 
+    else 
+        let beg = line('.')
+    endif
+
+    let until = s:NextIndent()
+
+    " go to the line we need
+    exec beg
+    let line_moves = until - beg
+
+    if line_moves > 0
+        execute "normal V" . line_moves . "j"
+    else
+        execute "normal VG" 
+    endif
+    execute "normal zf"
+    return 1
+endfunction
+
 
 " Select an object ("class"/"function")
 function! s:PythonSelectObject(obj, direction, count)
@@ -201,7 +297,7 @@ function! s:PythonSelectObject(obj, direction, count)
         let beg = line('.')
     endif
 
-    let until = s:NextIndent(1)
+    let until = s:NextIndent()
 
     " go to the line we need
     exec beg
@@ -238,12 +334,12 @@ function! s:NextUncommentedLine(fwd)
 endfunction
 
 
-function! s:NextIndent(fwd)
+function! s:NextIndent(...)
     let line = line('.')
     let column = col('.')
     let lastline = line('$')
     let indent = indent(line)
-    let stepvalue = a:fwd ? 1 : -1
+    let stepvalue = 1
 
     if (getline(line) =~ '^#')
         let until = s:NextUncommentedLine(1)
@@ -254,19 +350,29 @@ function! s:NextIndent(fwd)
     " and then go back until we find an indent that 
     " matches what we are looking for that is NOT whitespace
     let found = 0
+    let folded_lines = 0
     while ((line > 0) && (line <= lastline) && (found == 0))
-        let line = line + 1
 
+        " if we find a fold
+        if ((foldclosed(line) != -1) && (a:0 == 0))
+            let foldStart = foldclosed(line)
+            let foldEnd = foldclosedend(line)
+            let folds = foldEnd - foldStart
+            let folded_lines = folded_lines + folds 
+            let line = foldEnd + 1
+        else
+            let line = line + 1 
+        endif
         if ((indent(line) <= indent) && (getline(line) !~ '^\s*$'))
             let go_back = line -1 
             while (getline(go_back) =~ '^\s*$')
                 let go_back = go_back-1 
                 if (getline(go_back) !~ '^\s*$')
                     break 
-                    let found = 1
                 endif
             endwhile
-            return go_back 
+            return go_back - folded_lines
+            let found = 1
 
         " what if we reach end of file and no dice? 
         elseif (line == lastline)
@@ -276,11 +382,12 @@ function! s:NextIndent(fwd)
                     break 
                 endif
             endwhile
-            return line
+            let found = 1
+            return line - folded_lines
         endif
     endwhile
 endfunction
- 
+
 
 " Go to previous (-1) or next (1) class/function definition
 " return a line number that matches either a class or a function
@@ -639,6 +746,75 @@ function! s:NextFunction(record)
         call s:Echo("Could not match next function")
     endif 
 endfunction
+
+"
+" Folding:
+" 
+
+" Method:
+function! s:FoldThisMethod()
+    if (! s:PythonFoldObject("method", -1, 1))
+        call s:Echo("Could not match inside of method for folding")
+    endif
+endfunction
+
+function! s:FoldPreviousMethod()
+    let inside = s:IsInside("method")
+    let times = v:count1+inside
+    if (! s:PythonFoldObject("method", -1, times))
+        call s:Echo("Could not match previous method for folding")
+    endif 
+endfunction
+
+function! s:FoldNextMethod()
+    if (! s:PythonFoldObject("method", 1, v:count1))
+        call s:Echo("Could not match next method for folding")
+    endif 
+endfunction
+
+
+" Class:
+function! s:FoldThisClass()
+    if (! s:PythonFoldObject("class", -1, 1))
+        call s:Echo("Could not match inside of class for folding.")
+    endif
+endfunction
+
+function! s:FoldPreviousClass()
+    let inside = s:IsInside("class")
+    let times = v:count1+inside
+    if (! s:FindPythonObject("class", -1, times))
+        call s:Echo("Could not match previous class for folding")
+    endif 
+endfunction
+
+function! s:FoldNextClass()
+    if (! s:PythonFoldObject("class", 1, v:count1))
+        call s:Echo("Could not match next class for folding")
+    endif 
+endfunction
+
+
+" Function:
+function! s:FoldThisFunction()
+    if (! s:PythonFoldObject("function", -1, 1))
+        call s:Echo("Could not match inside of function for folding")
+    endif 
+endfunction
+
+function! s:FoldPreviousFunction()
+    let inside = s:IsInside("function")
+    let times = v:count1+inside
+    if (! s:PythonFoldObject("function", -1, times))
+        call s:Echo("Could not match previous function for folding")
+    endif 
+endfunction
+
+function! s:FoldNextFunction()
+    if (! s:PythonFoldObject("function", 1, v:count1))
+        call s:Echo("Could not match next function for folding")
+    endif 
+endfunction
 "}}}
 
 "{{{ Misc 
@@ -690,4 +866,20 @@ nnoremap <silent> <Plug>ChapaNextFunction           :<C-U>call <SID>NextFunction
 " Repeating Movements:
 nnoremap <silent> <Plug>ChapaOppositeRepeat         :<C-U>call <SID>BackwardRepeat()        <CR>
 nnoremap <silent> <Plug>ChapaRepeat                 :<C-U>call <SID>Repeat()                <CR>
+
+" Folding Method:
+nnoremap <silent> <Plug>ChapaFoldThisMethod         :<C-U>call <SID>FoldThisMethod()        <CR>
+nnoremap <silent> <Plug>ChapaFoldNextMethod         :<C-U>call <SID>FoldNextMethod()        <CR>
+nnoremap <silent> <Plug>ChapaFoldPreviousMethod     :<C-U>call <SID>FoldPreviousMethod()    <CR>
+
+" Folding Class:
+nnoremap <silent> <Plug>ChapaFoldThisClass          :<C-U>call <SID>FoldThisClass()         <CR>
+nnoremap <silent> <Plug>ChapaFoldNextClass          :<C-U>call <SID>FoldNextClass()         <CR>
+nnoremap <silent> <Plug>ChapaFoldPreviousClass      :<C-U>call <SID>FoldPreviousClass()     <CR>
+
+" Fold Function:
+nnoremap <silent> <Plug>ChapaFoldThisFunction       :<C-U>call <SID>FoldThisFunction()      <CR>
+nnoremap <silent> <Plug>ChapaFoldNextFunction       :<C-U>call <SID>FoldNextFunction()      <CR>
+nnoremap <silent> <Plug>ChapaFoldPreviousFunction   :<C-U>call <SID>FoldPreviousFunction()  <CR>
+
 "}}}
